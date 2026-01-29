@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Analytics | TobiForce HRMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --bg-main: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-main);
+            display: none; 
+        }
+
+        /* Consistent Glassmorphism with Staff Data page */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 30px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
+
+        .no-select { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    </style>
+</head>
+<body class="text-slate-800 no-select">
+
+    <div class="min-h-screen flex">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-[#0f172a] text-white z-50 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-500 ease-in-out flex-shrink-0 shadow-2xl">
+            <div class="p-8 flex items-center space-x-3">
+                <div class="bg-indigo-500 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fas fa-bolt-lightning text-xl"></i>
+                </div>
+                <span class="text-xl font-extrabold tracking-tighter uppercase italic">TOBIFORCE</span>
+            </div>
+            <nav id="dynamicNav" class="mt-4 px-4 space-y-2"></nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white/70 backdrop-blur-md border-b border-slate-200 px-8 py-5 flex justify-between items-center sticky top-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                        <i class="fas fa-bars-staggered"></i>
+                    </button>
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Executive Overview</h2>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-extrabold text-slate-800" id="adminNameDisplay">Admin</p>
+                        <div class="flex items-center justify-end gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            <span class="text-[9px] text-emerald-600 font-black uppercase tracking-widest">System Live</span>
+                        </div>
+                    </div>
+                    <div id="avatarInit" class="w-11 h-11 bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center rounded-2xl font-bold shadow-xl border-2 border-white transition-transform hover:scale-110 cursor-pointer">A</div>
+                </div>
+            </header>
+
+            <main class="p-6 md:p-10 space-y-8 animate-fade">
+                <div class="relative p-10 bg-[#0f172a] rounded-[2.5rem] text-white overflow-hidden shadow-2xl">
+                    <div class="relative z-10">
+                        <h1 class="text-3xl font-black tracking-tight">Welcome Back, <span id="welcomeName" class="text-indigo-400">Chief</span>!</h1>
+                        <p class="text-slate-400 mt-2 text-sm font-medium italic">Data analytics engine is monitoring employee demographics.</p>
+                    </div>
+                    <i class="fas fa-chart-pie absolute -right-4 -bottom-4 text-[12rem] opacity-10 rotate-12"></i>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-card p-6 rounded-[2rem] border-l-4 border-indigo-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Total Staff</p>
+                                <h3 class="text-3xl font-black text-slate-900 mt-1" id="totalStaffCount">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-user-group"></i></div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-[2rem] border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Male Personnel</p>
+                                <h3 class="text-3xl font-black text-slate-900 mt-1" id="maleCount">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-mars"></i></div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-[2rem] border-l-4 border-rose-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Female Personnel</p>
+                                <h3 class="text-3xl font-black text-slate-900 mt-1" id="femaleCount">0</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-venus"></i></div>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 rounded-[2rem] border-l-4 border-amber-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Generation Peak</p>
+                                <h3 class="text-xl font-black text-slate-900 mt-1" id="topGen">...</h3>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-bolt"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card p-8 rounded-[2.5rem]">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 bg-indigo-500 rounded-full"></span> Generational Mix
+                            </h3>
+                        </div>
+                        <div class="h-72"><canvas id="genChart"></canvas></div>
+                    </div>
+                    <div class="glass-card p-8 rounded-[2.5rem]">
+                        <div class="flex items-center justify-between mb-8">
+                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span> Employment Status
+                            </h3>
+                        </div>
+                        <div class="h-72"><canvas id="statusChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-8 rounded-[2.5rem]">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-amber-500 rounded-full"></span> Position Distribution
+                    </h3>
+                    <div class="h-80"><canvas id="jabatanChart"></canvas></div>
+                </div>
+
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/50 p-6 rounded-[2rem] border border-slate-100">
+                    <div class="px-4 py-2 bg-slate-100 rounded-full text-[10px] text-slate-500 font-black uppercase tracking-tighter">
+                        Last Engine Sync: <span class="text-indigo-600" id="lastSync">Pending...</span>
+                    </div>
+                    <button onclick="fetchData()" class="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl active:scale-95 flex items-center gap-3">
+                        <i class="fas fa-sync-alt" id="syncIcon"></i> Re-Sync Database
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../navbar.js"></script>
+    <script>
+        const CACHE_KEY = "tobiforce_staff_data"; // Matches Data Staff key
+        
+        // Auth Logic
+        if (localStorage.getItem('userRole') !== 'admin') { 
+            window.location.href = "../index.html"; 
+        } else {
+            document.body.style.display = "block";
+            const name = localStorage.getItem('userName') || "Admin";
+            document.getElementById('adminNameDisplay').innerText = name;
+            document.getElementById('welcomeName').innerText = name;
+            document.getElementById('avatarInit').innerText = name.charAt(0).toUpperCase();
+        }
+
+        let charts = {};
+
+        async function fetchData() {
+            const icon = document.getElementById('syncIcon');
+            icon?.classList.add('fa-spin');
+            
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=getStaff`);
+                const hasil = await res.json();
+                if (hasil.status === 'sukses') {
+                    // Update cache for both pages
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify(hasil));
+                    processAndRender(hasil);
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                icon?.classList.remove('fa-spin');
+            }
+        }
+
+        function processAndRender(hasil) {
+            const rows = hasil.rows;
+            const headers = hasil.headers.map(h => h.toLowerCase());
+            
+            // Dynamic Index Finding
+            const idxJK = headers.findIndex(h => h.includes('kelamin') || h.includes('jk'));
+            const idxJabatan = headers.findIndex(h => h.includes('jabatan'));
+            const idxStatus = headers.findIndex(h => h.includes('status'));
+            const idxUmur = headers.findIndex(h => h.includes('umur'));
+
+            let male = 0, female = 0, jabatanMap = {}, statusMap = {}, genMap = {"Gen Z":0, "Millennials":0, "Gen X":0, "Others":0};
+
+            rows.forEach(row => {
+                if(idxJK !== -1) {
+                    const jk = row[idxJK]?.toLowerCase() || '';
+                    if(jk.includes('laki')) male++; else female++;
+                }
+                if(idxJabatan !== -1 && row[idxJabatan]) jabatanMap[row[idxJabatan]] = (jabatanMap[row[idxJabatan]]||0)+1;
+                if(idxStatus !== -1 && row[idxStatus]) statusMap[row[idxStatus]] = (statusMap[row[idxStatus]]||0)+1;
+                if(idxUmur !== -1) {
+                    const age = parseInt(row[idxUmur]);
+                    if(age <= 28) genMap["Gen Z"]++;
+                    else if(age <= 44) genMap["Millennials"]++;
+                    else if(age <= 60) genMap["Gen X"]++;
+                    else genMap["Others"]++;
+                }
+            });
+
+            document.getElementById('totalStaffCount').innerText = rows.length;
+            document.getElementById('maleCount').innerText = male;
+            document.getElementById('femaleCount').innerText = female;
+            
+            const validGens = Object.entries(genMap).filter(([_, v]) => v > 0);
+            document.getElementById('topGen').innerText = validGens.length ? validGens.sort((a,b) => b[1]-a[1])[0][0] : "-";
+            document.getElementById('lastSync').innerText = new Date().toLocaleTimeString('id-ID');
+
+            renderChart('genChart', 'pie', Object.keys(genMap), Object.values(genMap), ['#6366f1', '#8b5cf6', '#f59e0b', '#cbd5e1']);
+            renderChart('statusChart', 'doughnut', Object.keys(statusMap), Object.values(statusMap), ['#10b981', '#f59e0b', '#6366f1', '#f43f5e']);
+            renderChart('jabatanChart', 'bar', Object.keys(jabatanMap), Object.values(jabatanMap), '#6366f1');
+        }
+
+        function renderChart(id, type, labels, data, colors) {
+            const ctx = document.getElementById(id).getContext('2d');
+            if (charts[id]) charts[id].destroy();
+            charts[id] = new Chart(ctx, {
+                type: type,
+                data: { labels, datasets: [{ data, backgroundColor: colors, borderRadius: type === 'bar' ? 12 : 0 }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: 'Plus Jakarta Sans', weight: 'bold', size: 10 } } } }
+                }
+            });
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
+
+        window.onload = () => {
+            const cached = sessionStorage.getItem(CACHE_KEY);
+            if(cached) processAndRender(JSON.parse(cached));
+            else fetchData();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Staff | TobiForce HRMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; display: none; }
+
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-gradient th {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+
+        /* Optimalisasi Tampilan Cetak (PDF) */
+        @media print {
+            @page { size: A4; margin: 1.5cm; }
+            #sidebar, header, .no-print, .action-btn { display: none !important; }
+            body { background: white !important; display: block !important; padding: 0; color: black !important; }
+            .flex-1 { margin: 0 !important; padding: 0 !important; }
+            .glass-card { 
+                background: white !important; 
+                border: 1px solid #000 !important; 
+                box-shadow: none !important; 
+                border-radius: 8px !important; 
+                backdrop-filter: none !important;
+            }
+            table { width: 100% !important; border-collapse: collapse; margin-top: 1rem; }
+            th { 
+                background: #f1f5f9 !important; 
+                color: black !important; 
+                -webkit-print-color-adjust: exact; 
+                border: 1px solid #000 !important;
+                font-size: 10px !important;
+            }
+            td { border: 1px solid #000 !important; color: black !important; font-size: 10px !important; padding: 6px !important; }
+            .stat-box { border: 1px solid #e2e8f0 !important; border-radius: 12px !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="min-h-screen flex">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-[#0F172A] text-white z-50 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex-shrink-0">
+            <div class="p-8 flex items-center space-x-3">
+                <div class="bg-indigo-500 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fas fa-bolt-lightning text-xl"></i>
+                </div>
+                <span class="text-xl font-extrabold tracking-tighter uppercase italic">TOBIFORCE</span>
+            </div>
+            <nav id="dynamicNav" class="mt-4 px-4 space-y-2"></nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white/70 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+                <h2 class="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">System Reporting</h2>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-bold text-slate-900" id="adminNameDisplay">Administrator</p>
+                        <span class="text-[9px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-md font-black uppercase tracking-wider">Auth Verified</span>
+                    </div>
+                    <div id="avatarInit" class="w-10 h-10 bg-slate-900 text-white flex items-center justify-center rounded-xl font-bold border-2 border-indigo-500/20 shadow-lg">A</div>
+                </div>
+            </header>
+            
+            <main class="p-6 md:p-10 space-y-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 no-print">
+                    <div class="flex items-center gap-5">
+                        <div class="w-14 h-14 bg-white shadow-2xl shadow-indigo-100 rounded-2xl flex items-center justify-center border border-slate-100">
+                            <i class="fas fa-file-invoice text-indigo-500 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">Rekapitulasi SDM</h1>
+                            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em] mt-1" id="reportDate">Generating date...</p>
+                        </div>
+                    </div>
+                    <button onclick="window.print()" class="action-btn px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-2xl hover:bg-indigo-600 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-3">
+                        <i class="fas fa-print"></i> Ekspor Laporan PDF
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-card stat-box p-6 rounded-[2rem]">
+                        <p class="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-2">Total Staff</p>
+                        <h3 class="text-4xl font-black text-slate-900 tracking-tighter" id="statTotal">0</h3>
+                    </div>
+                    <div class="glass-card stat-box p-6 rounded-[2rem] border-b-4 border-b-blue-500">
+                        <p class="text-blue-500 text-[9px] font-black uppercase tracking-widest mb-2">Pria (L)</p>
+                        <h3 class="text-4xl font-black text-slate-900 tracking-tighter" id="statMale">0</h3>
+                    </div>
+                    <div class="glass-card stat-box p-6 rounded-[2rem] border-b-4 border-b-rose-500">
+                        <p class="text-rose-500 text-[9px] font-black uppercase tracking-widest mb-2">Wanita (P)</p>
+                        <h3 class="text-4xl font-black text-slate-900 tracking-tighter" id="statFemale">0</h3>
+                    </div>
+                    <div class="glass-card stat-box p-6 rounded-[2rem] border-b-4 border-b-indigo-500">
+                        <p class="text-indigo-500 text-[9px] font-black uppercase tracking-widest mb-2">Waktu Sinkron</p>
+                        <h3 class="text-xl font-black text-slate-900 mt-2 tracking-tighter" id="statTime">00:00</h3>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden border border-white">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr id="tableHead" class="table-gradient text-white text-[10px] uppercase tracking-[0.2em] font-black">
+                                    <th class="px-8 py-6 text-center">No</th>
+                                    <th class="px-8 py-6">Nama Lengkap</th>
+                                    <th class="px-8 py-6">Jabatan Perusahaan</th>
+                                    <th class="px-8 py-6">Gender</th>
+                                    <th class="px-8 py-6">Kontak Person</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 text-xs font-bold text-slate-600 bg-white/50">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="emptyState" class="p-24 text-center hidden">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                            <i class="fas fa-folder-open text-3xl text-slate-200"></i>
+                        </div>
+                        <p class="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">Database Tidak Ditemukan</p>
+                    </div>
+                </div>
+
+                <div class="mt-20 hidden print:grid grid-cols-2 gap-20 text-center">
+                    <div class="space-y-20">
+                        <p class="text-[10px] uppercase font-black tracking-widest text-slate-400">Dibuat Secara Digital Oleh,</p>
+                        <div class="border-t-2 border-slate-900 pt-4 inline-block px-12">
+                            <p class="font-black text-sm uppercase" id="footerAdminName">Admin</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">HR Administrator</p>
+                        </div>
+                    </div>
+                    <div class="space-y-20">
+                        <p class="text-[10px] uppercase font-black tracking-widest text-slate-400">Verifikasi Kepala Divisi,</p>
+                        <div class="border-t-2 border-slate-900 pt-4 inline-block px-12">
+                            <p class="font-black text-sm uppercase">TobiForce Official</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Executive Manager</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../navbar.js"></script>
+    <script>
+        const STAFF_CACHE_KEY = "tobiforce_staff_data";
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const role = localStorage.getItem('userRole');
+            const name = localStorage.getItem('userName') || "Administrator";
+            
+            if (role !== 'admin') {
+                window.location.href = "../index.html";
+                return;
+            }
+
+            document.body.style.display = "block";
+            document.getElementById('footerAdminName').innerText = name;
+            document.getElementById('adminNameDisplay').innerText = name;
+            document.getElementById('avatarInit').innerText = name.charAt(0).toUpperCase();
+            
+            loadReportData();
+        });
+
+        function loadReportData() {
+            const now = new Date();
+            document.getElementById('reportDate').innerText = now.toLocaleDateString('id-ID', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            document.getElementById('statTime').innerText = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+            const cached = sessionStorage.getItem(STAFF_CACHE_KEY);
+            
+            if (cached) {
+                const data = JSON.parse(cached);
+                renderReport(data);
+            } else {
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
+        }
+
+        function renderReport(data) {
+            const body = document.getElementById('tableBody');
+            const { headers, rows } = data;
+
+            // Cari Index Kolom
+            const idxName = headers.findIndex(h => h.toLowerCase().includes('nama'));
+            const idxJabatan = headers.findIndex(h => h.toLowerCase().includes('jabatan'));
+            const idxJK = headers.findIndex(h => h.toLowerCase().includes('kelamin') || h.toLowerCase().includes('jk'));
+            const idxHP = headers.findIndex(h => h.toLowerCase().includes('hp') || h.toLowerCase().includes('telp'));
+
+            let maleCount = 0;
+            let femaleCount = 0;
+
+            body.innerHTML = rows.map((row, index) => {
+                const jkVal = row[idxJK]?.toLowerCase() || '';
+                if (jkVal.includes('laki') || jkVal === 'l') maleCount++;
+                else if (jkVal.includes('perempuan') || jkVal.includes('wanita') || jkVal === 'p') femaleCount++;
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-5 text-center font-black text-slate-300 text-[10px]">${index + 1}</td>
+                        <td class="px-8 py-5 font-black text-slate-800 tracking-tight">${row[idxName] || '-'}</td>
+                        <td class="px-8 py-5">
+                            <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                ${row[idxJabatan] || 'Staff'}
+                            </span>
+                        </td>
+                        <td class="px-8 py-5 uppercase text-[10px] font-bold text-slate-500">${row[idxJK] || '-'}</td>
+                        <td class="px-8 py-5 font-mono text-slate-400 text-[11px]">${row[idxHP] || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('statTotal').innerText = rows.length;
+            document.getElementById('statMale').innerText = maleCount;
+            document.getElementById('statFemale').innerText = femaleCount;
+        }
+    </script>
+</body>
+</html>

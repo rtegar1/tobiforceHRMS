@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrasi Staff | TobiForce HRMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; display: none; }
+        .mesh-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.08) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(30, 27, 75, 0.1) 0px, transparent 50%); background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.6); }
+        .no-select { -webkit-user-select: none; user-select: none; }
+    </style>
+</head>
+<body class="text-slate-800 no-select">
+
+    <div class="mesh-bg"></div>
+
+    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/40 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <div class="min-h-screen flex">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-[#1E293B] text-white z-50 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 flex-shrink-0 shadow-2xl">
+            <div class="p-6 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-500 p-2 rounded-lg shadow-lg"><i class="fas fa-bolt-lightning text-xl"></i></div>
+                    <span class="text-xl font-extrabold tracking-tighter uppercase">TOBIFORCE</span>
+                </div>
+                <button class="md:hidden text-slate-400" onclick="toggleSidebar()"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <nav id="dynamicNav" class="mt-6 px-4 space-y-2"></nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSidebar()" class="md:hidden text-slate-600 p-2 hover:bg-slate-100 rounded-lg"><i class="fas fa-bars text-xl"></i></button>
+                    <h2 class="text-lg font-bold text-slate-800">Tambah Anggota</h2>
+                </div>
+                <div id="avatarInit" class="w-10 h-10 bg-indigo-600 text-white flex items-center justify-center rounded-2xl font-bold shadow-lg">A</div>
+            </header>
+
+            <main class="p-4 md:p-8 flex justify-center">
+                <div class="w-full max-w-4xl">
+                    <div class="glass-card rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/60">
+                        
+                        <div class="p-8 bg-[#1E293B] text-white relative overflow-hidden">
+                            <div class="relative z-10">
+                                <h3 class="text-xl font-extrabold tracking-tight">Input Data Staff & Akun</h3>
+                                <p class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold mt-1" id="syncStatus">Syncing Fields...</p>
+                            </div>
+                            <i class="fas fa-user-plus absolute right-[-10px] top-1/2 -translate-y-1/2 text-8xl opacity-10"></i>
+                        </div>
+
+                        <form id="registerForm" onsubmit="handleRegister(event)" class="p-8 space-y-8">
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
+                                    <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Informasi Profil Personal</h4>
+                                </div>
+                                <div id="dynamicInputs" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="col-span-full py-10 text-center animate-pulse text-slate-400">Memuat Formulir...</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-3 border-t border-slate-100 pt-8">
+                                    <div class="w-1.5 h-6 bg-rose-500 rounded-full"></div>
+                                    <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Otoritas & Keamanan</h4>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Password Staff</label>
+                                        <input type="password" name="password_staff" placeholder="••••••••" required 
+                                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm shadow-sm transition-all">
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Akses Role</label>
+                                        <select name="role_staff" required class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm shadow-sm appearance-none">
+                                            <option value="staff" selected>Staff (Akses Terbatas)</option>
+                                            <option value="admin">Administrator (Full Access)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 flex flex-col sm:flex-row gap-4">
+                                <button type="submit" id="btnSubmit" class="flex-[2] bg-indigo-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-700 transition-all active:scale-95">
+                                    <i class="fas fa-cloud-upload-alt mr-2"></i> Daftarkan Sekarang
+                                </button>
+                                <button type="reset" class="flex-1 px-6 py-4 text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] hover:bg-slate-100 rounded-2xl transition-all">
+                                    Reset Form
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../navbar.js"></script>
+    <script>
+        const STAFF_CACHE_KEY = "tobiforce_staff_data";
+
+        // 1. Keamanan & Auth
+        if (localStorage.getItem('userRole') !== 'admin') { 
+            window.location.href = "../index.html"; 
+        } else { 
+            document.body.style.display = "block"; 
+            document.getElementById('avatarInit').innerText = (localStorage.getItem('userName') || "A").charAt(0).toUpperCase();
+        }
+
+        // 2. Load Dynamic Form berdasarkan Headers di Sheets
+        async function setupForm() {
+            const statusE = document.getElementById('syncStatus');
+            try {
+                // Gunakan cache jika ada untuk mempercepat load form
+                let headers;
+                const cached = sessionStorage.getItem(STAFF_CACHE_KEY);
+                
+                if (cached) {
+                    headers = JSON.parse(cached).headers;
+                } else {
+                    const res = await fetch(`${WEB_APP_URL}?action=getStaff`);
+                    const hasil = await res.json();
+                    headers = hasil.headers;
+                    sessionStorage.setItem(STAFF_CACHE_KEY, JSON.stringify(hasil));
+                }
+
+                renderFields(headers);
+                statusE.innerText = "Form Ready";
+            } catch (e) { 
+                statusE.innerText = "Error Syncing Fields";
+                console.error(e); 
+            }
+        }
+
+        function renderFields(headers) {
+            const container = document.getElementById('dynamicInputs');
+            container.innerHTML = headers.map((h, index) => {
+                const hLow = h.toLowerCase();
+                let inputHTML = "";
+                const baseClass = "w-full p-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm transition-all shadow-sm";
+
+                if (hLow.includes('jk') || hLow.includes('kelamin')) {
+                    inputHTML = `<select name="${h}" required class="${baseClass}">
+                        <option value="" disabled selected>Pilih...</option>
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option></select>`;
+                } else if (hLow.includes('tgl') || hLow.includes('tanggal')) {
+                    inputHTML = `<input type="date" name="${h}" required class="${baseClass}">`;
+                } else {
+                    // Kolom pertama (biasanya Username/ID) kita beri perhatian khusus
+                    const isID = index === 0;
+                    inputHTML = `<input type="text" name="${h}" placeholder="${isID ? 'Contoh: TOBI001' : 'Ketik ' + h + '...'}" required class="${baseClass}">`;
+                }
+
+                return `<div class="space-y-2">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">${h}</label>
+                    ${inputHTML}
+                </div>`;
+            }).join('');
+        }
+
+        // 3. Submit Data ke Server
+        async function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            const form = e.target;
+            const formData = new FormData(form);
+            const payload = { action: 'addStaff' };
+
+            // Mapping form ke payload
+            formData.forEach((value, key) => {
+                const el = form.querySelector(`[name="${key}"]`);
+                if (el.type === 'date' && value) {
+                    const [y, m, d] = value.split('-');
+                    payload[key] = `${d}/${m}/${y}`; // Format tanggal sesuai Sheets (DD/MM/YYYY)
+                } else {
+                    payload[key] = value;
+                }
+            });
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...`;
+
+            try {
+                const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const json = await res.json();
+                
+                if (json.status === 'sukses') {
+                    // PENTING: Reset seluruh cache agar data terbaru muncul di Dashboard & Database
+                    localStorage.removeItem("tobiforce_global_cache");
+                    sessionStorage.removeItem(STAFF_CACHE_KEY);
+                    
+                    alert("✅ Sukses! Anggota baru telah terdaftar.");
+                    window.location.href = "datastaff.html";
+                } else {
+                    alert("❌ Gagal: " + (json.msg || "Terjadi kesalahan server"));
+                }
+            } catch (e) { 
+                alert("❌ Error: Tidak dapat terhubung ke server."); 
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-cloud-upload-alt mr-2"></i> Daftarkan Sekarang`;
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.toggle('hidden');
+        }
+
+        window.onload = setupForm;
+    </script>
+</body>
+</html>

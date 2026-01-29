@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Staff | TobiForce HRMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+            display: none;
+        }
+
+        .report-page {
+            background: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-page::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-report { animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .row-hover:hover { background-color: #f1f5f9; }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        @media print {
+            #sidebar, header, .no-print, #editModal { display: none !important; }
+            body { background: white !important; display: block !important; padding: 0 !important; }
+            .min-h-screen { min-height: 0 !important; }
+            .report-page { box-shadow: none !important; border: 1px solid #eee !important; width: 100% !important; margin: 0 !important; border-radius: 0 !important; }
+            main { padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="min-h-screen flex">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-[#0F172A] text-white z-50 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-500 shadow-2xl">
+            <div class="p-8 flex items-center space-x-3">
+                <div class="bg-indigo-500 p-2.5 rounded-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fas fa-bolt-lightning text-xl"></i>
+                </div>
+                <span class="text-xl font-extrabold tracking-tighter uppercase italic">TOBIFORCE</span>
+            </div>
+            <nav id="dynamicNav" class="mt-4 px-4 space-y-2"></nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-w-0">
+            <header class="bg-white/80 backdrop-blur-md border-b border-slate-100 px-8 py-4 flex justify-between items-center sticky top-0 z-30">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-500"><i class="fas fa-bars-staggered"></i></button>
+                    <h1 class="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Profile Report</h1>
+                </div>
+                <div class="flex gap-3 no-print">
+                    <button onclick="window.print()" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-100 transition-all border border-slate-200">
+                        <i class="fas fa-print text-sm"></i>
+                    </button>
+                    <button onclick="bukaModalEdit()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-indigo-600 transition-all active:scale-95">
+                        <i class="fas fa-pen-nib mr-2"></i> Update Profile
+                    </button>
+                </div>
+            </header>
+
+            <main class="p-4 md:p-12 flex justify-center bg-slate-50/50">
+                <div class="w-full max-w-3xl animate-report">
+                    
+                    <div class="report-page rounded-3xl overflow-hidden shadow-2xl shadow-indigo-100/50">
+                        <div class="p-10 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start gap-8">
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+                                        <i class="fas fa-user-tie text-white text-xl"></i>
+                                    </div>
+                                    <h2 class="text-2xl font-black text-slate-900 tracking-tighter">Biodata Karyawan</h2>
+                                </div>
+                                <div class="space-y-1">
+                                    <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">Waktu Penarikan Data</p>
+                                    <p class="text-slate-600 text-xs font-bold flex items-center gap-2">
+                                        <i class="far fa-calendar-check text-indigo-500"></i>
+                                        <span id="printDate">--/--/----</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-left md:text-right">
+                                <span class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-emerald-100">
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    Verified Status
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-6 md:p-10">
+                            <div class="overflow-hidden rounded-2xl border border-slate-100">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50/80">
+                                            <th class="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Kategori Parameter</th>
+                                            <th class="px-8 py-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Detail Informasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportTableBody" class="divide-y divide-slate-50">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="p-10 bg-slate-50/50 border-t border-slate-50">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-2 text-indigo-600">
+                                        <i class="fas fa-shield-check text-sm"></i>
+                                        <p class="font-black text-[10px] uppercase tracking-widest">Data Integrity</p>
+                                    </div>
+                                    <p class="text-slate-400 text-[11px] leading-relaxed italic">"Dokumen ini dihasilkan secara digital melalui TobiForce HRMS Cloud System dan memiliki kekuatan hukum yang sah di lingkungan internal perusahaan."</p>
+                                </div>
+                                <div class="flex flex-col items-center md:items-end">
+                                    <p class="text-slate-400 mb-14 uppercase font-black text-[9px] tracking-[0.2em]">Authorized Signature</p>
+                                    <div class="text-center md:text-right border-t-2 border-slate-900 pt-3 min-w-[180px]">
+                                        <p class="font-black text-slate-900 text-sm tracking-tighter" id="reportSignature">---</p>
+                                        <p class="text-[9px] font-bold text-indigo-500 uppercase tracking-widest" id="reportIDBadge">ID: ---</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="editModal" class="fixed inset-0 z-[60] hidden">
+        <div class="flex items-center justify-center min-h-screen px-4 bg-slate-900/40 backdrop-blur-md">
+            <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-lg w-full overflow-hidden border border-white/20">
+                <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+                    <div>
+                        <h3 class="font-black text-[10px] uppercase tracking-[0.2em] text-indigo-500 mb-1">Update Information</h3>
+                        <p class="text-lg font-black text-slate-900 tracking-tighter">Koreksi Data Mandiri</p>
+                    </div>
+                    <button onclick="tutupModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-rose-500 transition-colors shadow-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="dynamicForm" class="p-8 space-y-5 max-h-[50vh] overflow-y-auto custom-scrollbar"></div>
+                <div class="p-8 bg-slate-50 flex gap-4">
+                    <button id="btnSimpan" onclick="simpanPerubahan()" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-indigo-600 transition-all active:scale-95">
+                        Simpan & Sinkronisasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../navbar.js"></script>
+    <script>
+        const userLogin = localStorage.getItem("userName");
+        const role = localStorage.getItem("userRole");
+        const CACHE_KEY = "tobiforce_global_cache";
+
+        if (role !== "staff" || !userLogin) {
+            window.location.href = "../index.html";
+        } else {
+            document.body.style.display = "block";
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        let headers = [];
+        let profileData = [];
+
+        // FUNGSI MEMBERSIHKAN TANGGAL ISO
+        function formatDisplayValue(val) {
+            if (!val) return '-';
+            // Deteksi format ISO Date (mengandung T dan Z)
+            if (typeof val === 'string' && val.includes('T') && val.includes('Z')) {
+                const date = new Date(val);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+            }
+            return val;
+        }
+
+        async function initReport() {
+            const cached = localStorage.getItem(CACHE_KEY);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                const myData = parsed.data.find(row => row[0] === userLogin);
+                if (myData) {
+                    headers = parsed.headers;
+                    profileData = myData;
+                    renderReportTable();
+                    fetchSync();
+                    return;
+                }
+            }
+            fetchSync();
+        }
+
+        async function fetchSync() {
+            try {
+                const res = await (await fetch(`${WEB_APP_URL}?action=getStaffProfile&username=${userLogin}`)).json();
+                if (res.status === 'sukses') {
+                    headers = res.headers;
+                    profileData = res.data;
+                    renderReportTable();
+                }
+            } catch (e) { console.error("Report sync failed"); }
+        }
+
+        function renderReportTable() {
+            const tbody = document.getElementById('reportTableBody');
+            let html = "";
+            headers.forEach((h, i) => {
+                const val = profileData[i] || '-';
+                html += `
+                    <tr class="row-hover transition-colors group">
+                        <td class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-50 w-1/3">${h}</td>
+                        <td class="px-8 py-5 text-sm font-black text-slate-700 group-hover:text-indigo-600 transition-colors">${formatDisplayValue(val)}</td>
+                    </tr>`;
+            });
+            tbody.innerHTML = html;
+            document.getElementById('reportSignature').innerText = profileData[1] || userLogin;
+            document.getElementById('reportIDBadge').innerText = `ID: ${profileData[0]}`;
+        }
+
+        function bukaModalEdit() {
+            const form = document.getElementById('dynamicForm');
+            form.innerHTML = headers.map((h, i) => {
+                if(i === 0) return `<input type="hidden" id="input_${h}" value="${profileData[i]}">`;
+                
+                let rawVal = profileData[i] || '';
+                // Jika ISO, ubah ke YYYY-MM-DD agar input bisa dibaca sistem
+                if (typeof rawVal === 'string' && rawVal.includes('T') && rawVal.includes('Z')) {
+                    const d = new Date(rawVal);
+                    if (!isNaN(d.getTime())) rawVal = d.toISOString().split('T')[0];
+                }
+
+                return `
+                <div class="space-y-2">
+                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">${h}</label>
+                    <input type="text" id="input_${h}" value="${rawVal}" 
+                    class="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all">
+                </div>`;
+            }).join('');
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function tutupModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+        async function simpanPerubahan() {
+            const btn = document.getElementById('btnSimpan');
+            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-2"></i> Sinkronisasi...`; 
+            btn.disabled = true;
+            
+            const payload = { action: 'updateStaff', username: userLogin };
+            headers.forEach((h, i) => { if(i > 0) payload[h] = document.getElementById(`input_${h}`).value; });
+
+            try {
+                const res = await (await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) })).json();
+                if(res.status === 'sukses') {
+                    localStorage.removeItem(CACHE_KEY);
+                    location.reload();
+                }
+            } catch (e) { 
+                alert("Gagal memperbarui data."); 
+                btn.innerText = "SIMPAN & SINKRONISASI";
+                btn.disabled = false;
+            }
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('-translate-x-full'); }
+
+        window.onload = initReport;
+    </script>
+</body>
+</html>
