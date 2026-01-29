@@ -41,8 +41,10 @@ Tempelkan Web App URL yang sudah disalin tadi:
 
 3. Jalankan Aplikasi
 Buka file index.html menggunakan browser atau gunakan ekstensi Live Server di VS Code untuk pengalaman pengembangan yang lebih baik
+username role admin: admin   | username role staff: najib
+password role admin: 1234    | password role staff: 1234
 
-4. Struktur File
+5. Struktur File
 --- 
     index.html - Struktur utama aplikasi dan UI.
     navbar.js - Logika frontend dan pemanggilan API.
